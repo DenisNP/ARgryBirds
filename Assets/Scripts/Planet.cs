@@ -255,6 +255,7 @@ public class Planet : MonoBehaviour
     private void TurnBackwards(bool b)
     {
         _backwards = b;
+        _generateNumber = 3;
     }
 
     private void HideWindows()
