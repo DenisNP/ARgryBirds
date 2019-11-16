@@ -4799,6 +4799,8 @@ MonoBehaviour:
   WhiteParticles: {fileID: 8425611282754423028}
   CivParticles: {fileID: 9098451766840022013}
   NatParticles: {fileID: 6772406026287203798}
+  HitCiv: {fileID: 5949853631898351757, guid: 358927e39ffcf17409845ad50b0185d2, type: 3}
+  HitNat: {fileID: 6673025913210352394, guid: 56a68e61507a2b24f9f2db50c2849c35, type: 3}
   Type: civ
 --- !u!1 &4975099327207865224
 GameObject:

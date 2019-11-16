@@ -10,6 +10,7 @@ namespace Assets.Scripts
         private float _speed;
         private Vector3 _axis;
         private float _angSpeed;
+        private string _id;
         
         void Update()
         {
@@ -20,13 +21,19 @@ namespace Assets.Scripts
                 _velocity = Quaternion.AngleAxis(-_angSpeed, _axis) * _velocity;
             }
 
-            if (transform.position.magnitude < 1.1f || transform.position.z > 0.5f)
+            if (transform.position.magnitude < 1.1f)
+            {
+                _planet.HitSomething(transform.position, _id);
+                Destroy(gameObject);
+            }
+            
+            if (transform.position.z > 0.5f)
             {
                 Destroy(gameObject);
             }
         }
         
-        public void Fire(Vector3 startPoint, float speed, float angSpeed, Planet planet)
+        public void Fire(Vector3 startPoint, float speed, float angSpeed, string id, Planet planet)
         {
             _planet = planet;
             
@@ -38,6 +45,7 @@ namespace Assets.Scripts
             _velocity = vel.normalized;
             _speed = speed;
             _angSpeed = angSpeed;
+            _id = id;
         }
     }
 }

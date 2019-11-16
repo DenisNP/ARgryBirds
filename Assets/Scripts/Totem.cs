@@ -7,11 +7,35 @@ public class Totem : MonoBehaviour
     public GameObject WhiteParticles;
     public GameObject CivParticles;
     public GameObject NatParticles;
+
+    public GameObject HitCiv;
+    public GameObject HitNat;
+    
     public string Type;
+
+    private float prevAnim = 0f;
+    private float animFrame = 0f;
 
     void Start()
     {
         TurnOff();
+    }
+
+    void Update()
+    {
+        if (animFrame > 0f)
+        {
+            prevAnim = animFrame;
+            animFrame -= 0.05f;
+            WhiteParticles.transform.localScale = new Vector3(1f + animFrame, 1f + animFrame, 1f + animFrame);
+            TurnOn();
+        }
+
+        if (prevAnim > 0f && animFrame <= 0f)
+        {
+            prevAnim = 0f;
+            TurnOff();
+        }
     }
 
     public void TurnOn()
@@ -42,5 +66,15 @@ public class Totem : MonoBehaviour
     public bool IsDisabled()
     {
         return Type == "none";
+    }
+
+    public void HitAnim()
+    {
+        animFrame = 1f;
+    }
+
+    public void FullHitAnim()
+    {
+        Instantiate(Type == "civ" ? HitCiv : HitNat, transform.position, Quaternion.identity);
     }
 }

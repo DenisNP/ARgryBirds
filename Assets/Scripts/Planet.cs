@@ -24,7 +24,9 @@ public class Planet : MonoBehaviour
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
-    
+    private const string StateUri = "https://arngry.herokuapp.com";
+    private const string ModeUri = "https://arngry.herokuapp.com";
+
     private const float topCam = 0.33f;
     private const float bottomCam = -0.46f;
     private const float leftCam = -0.53f;
@@ -182,7 +184,7 @@ public class Planet : MonoBehaviour
         {
             _requestingNow = true;
             _lastRequest = DateTime.Now;
-            StartCoroutine(GetRequest("https://arngry.herokuapp.com/"));
+            StartCoroutine(GetState());
         }
 
         if (_lastState.HasPose(1))
@@ -761,9 +763,9 @@ public class Planet : MonoBehaviour
         return pts;
     }
     
-    IEnumerator GetRequest(string uri)
+    IEnumerator GetState()
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(StateUri))
         {
             // Request and wait for the desired page.
             yield return webRequest.SendWebRequest();
@@ -781,6 +783,15 @@ public class Planet : MonoBehaviour
             }
         }
     }
+
+    IEnumerator SendMode(int mode, string id)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get($"{ModeUri}/{id}/{mode}"))
+        {
+            // Request and wait for the desired page.
+            yield return webRequest.SendWebRequest();
+        }
+    }
     
     private void CreateBird()
     {
@@ -792,7 +803,73 @@ public class Planet : MonoBehaviour
             startPoint,
             LowerSpeed + (HigherSpeed - LowerSpeed) * _lastState.last_hit.strength,
             HigherAngularSpeed - (HigherAngularSpeed - LowerAngularSpeed) * _lastState.last_hit.strength,
+            _lastState.last_hit.id,
             this
         );
+        StartCoroutine(SendMode(0, _lastState.last_hit.id));
+    }
+
+    public void HitSomething(Vector3 point, string id)
+    {
+        var minDist = float.MaxValue;
+        Totem bestTotem = null;
+        foreach (var (tt, _) in _totems)
+        {
+            var dist = (point - totem.transform.position).magnitude;
+            if (minDist < dist)
+            {
+                minDist = dist;
+                bestTotem = tt;
+            }
+        }
+
+        if (bestTotem != null && minDist < 0.1f)
+        {
+            if (_lastHitType == "" && !bestTotem.IsDisabled())
+            {
+                // first hit non neutral
+                _lastHitType = bestTotem.Type;
+                StartCoroutine(SendMode(_lastHitType == "civ" ? 1 : 2, id));
+                _score += 20;
+                bestTotem.DisableType();
+                bestTotem.HitAnim();
+            }
+            else if (_lastHitType == bestTotem.Type)
+            {
+                // second hit right
+                _lastHitType = "";
+                StartCoroutine(SendMode(0, id));
+                bestTotem.FullHitAnim();
+                _score += 100;
+                _generateNumber += (bestTotem.Type == "civ" ? -2 : 2);
+                ShuffleTotems();
+            } 
+            else if (_lastHitType != "")
+            {
+                // second hit wrong
+                _generateNumber += Math.Sign(_generateNumber);
+                bestTotem.DisableType();
+            }
+            else
+            {
+                // first hit neutral
+                bestTotem.HitAnim();
+            }
+        }
+    }
+
+    private void ShuffleTotems()
+    {
+        foreach (var (tt, _) in _totems)
+        {
+            tt.ShuffleType();
+            tt.TurnOff();
+        }
+        
+        while (_totems.Count(x => x.Item1.IsDisabled()) < DisabledTotemsCount)
+        {
+            var tt = _totems[Random.Range(0, _totems.Count)].Item1;
+            tt.DisableType();
+        }
     }
 }
