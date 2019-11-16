@@ -39,6 +39,10 @@ public class Planet : MonoBehaviour
     public GameObject[] seaObjects;
     public Bird bird;
 
+    public Text winText;
+    public Text looseText;
+    public Text dangerText;
+
     public Totem totem;
     public Transform Clouds;
     
@@ -121,16 +125,17 @@ public class Planet : MonoBehaviour
 
                 if (civRatio > 0.99f)
                 {
-                    // TODO game over
+                    looseText.gameObject.SetActive(true);
+                    looseText.text = $"GAME OVER\nyour score: {_score}";
                     TurnBackwards(true);
                     _score = 0;
                 }
                 else if (civRatio >= 0.9f)
                 {
-                    // TODO warning
+                    dangerText.gameObject.SetActive(true);
                     if (_lastState.HasPose(3))
                     {
-                        // TODO remove warning
+                        HideWindows();
                         TurnBackwards(true);
                     }
                 }
@@ -147,7 +152,7 @@ public class Planet : MonoBehaviour
                 var repeat = 2;
                 if (Math.Abs(civRatio - 0.5f) <= 0.05f)
                 {
-                    // TODO close all warnings
+                    HideWindows();
                     TurnBackwards(false);
                 }
                 else
@@ -241,7 +246,7 @@ public class Planet : MonoBehaviour
 
         if (_visibleScore >= MaxScore && _score == _visibleScore && !_backwards)
         {
-            // TODO win
+            winText.gameObject.SetActive(true);
             TurnBackwards(true);
             _score = 0;
         }
@@ -252,8 +257,17 @@ public class Planet : MonoBehaviour
         _backwards = b;
     }
 
+    private void HideWindows()
+    {
+        winText.gameObject.SetActive(false);
+        looseText.gameObject.SetActive(false);
+        dangerText.gameObject.SetActive(false);
+    }
+
     public void Start()
     {
+        HideWindows();
+        
         InitAsIcosohedron();
         Subdivide(3);
         CalculateNeighbors();
