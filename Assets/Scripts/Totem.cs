@@ -75,6 +75,7 @@ public class Totem : MonoBehaviour
 
     public void FullHitAnim()
     {
-        Instantiate(Type == "civ" ? HitCiv : HitNat, transform.position, Quaternion.identity);
+        var anim = Instantiate(Type == "civ" ? HitCiv : HitNat, transform.position, Quaternion.identity);
+        anim.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
     }
 }
