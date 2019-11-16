@@ -106,12 +106,12 @@ public class Planet : MonoBehaviour
                 healthBar.UpdateBar(civRatio, 1f);
                 _lastGenerated = DateTime.Now;
 
-                if (civRatio > 1f)
+                if (civRatio > 0.99f)
                 {
                     // TODO game over
                     TurnBackwards(true);
                 }
-                else if (civRatio >= 0.95f)
+                else if (civRatio >= 0.9f)
                 {
                     // TODO warning
                     if (_lastState.HasPose(3))
