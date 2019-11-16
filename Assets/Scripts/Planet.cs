@@ -12,6 +12,7 @@ public class Planet : MonoBehaviour
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
     private const int TotemsCount = 16;
+    private const int DisabledTotemsCount = 6;
     private const int StartNaturePercent = 75;
     private const float BackwardsSpeedCoeff = 100f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
@@ -319,15 +320,21 @@ public class Planet : MonoBehaviour
         while (_totems.Count < TotemsCount)
         {
             var index = Random.Range(0, points.Count);
-            var _point = points[index];
+            var p = points[index];
             points.RemoveAt(index);
             
-            var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * _point;
+            var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * p;
             var t = Instantiate(totem, point, Quaternion.identity, transform); 
             t.transform.rotation = Quaternion.LookRotation(t.transform.position);
             t.ShuffleType();
 
-            _totems.Add((t, _point));
+            _totems.Add((t, p));
+        }
+
+        while (_totems.Count(x => x.Item1.IsDisabled()) < DisabledTotemsCount)
+        {
+            var tt = _totems[Random.Range(0, _totems.Count)].Item1;
+            tt.DisableType();
         }
     }
 

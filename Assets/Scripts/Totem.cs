@@ -16,9 +16,8 @@ public class Totem : MonoBehaviour
 
     public void TurnOn()
     {
-        var isCiv = Type == "civ";
-        CivParticles.SetActive(isCiv);
-        NatParticles.SetActive(isCiv);
+        CivParticles.SetActive(Type == "civ");
+        NatParticles.SetActive(Type == "nat");
         WhiteParticles.SetActive(false);
     }
 
@@ -32,5 +31,16 @@ public class Totem : MonoBehaviour
     public void ShuffleType()
     {
         Type = Random.Range(0, 100) < 50 ? "civ" : "nat";
+    }
+
+    public void DisableType()
+    {
+        Type = "none";
+        TurnOff();
+    }
+
+    public bool IsDisabled()
+    {
+        return Type == "none";
     }
 }
