@@ -5,7 +5,8 @@ using UnityEngine;
 public class Totem : MonoBehaviour
 {
     public GameObject WhiteParticles;
-    public GameObject Particles;
+    public GameObject CivParticles;
+    public GameObject NatParticles;
     public string Type;
 
     void Start()
@@ -15,13 +16,21 @@ public class Totem : MonoBehaviour
 
     public void TurnOn()
     {
-        Particles.SetActive(true);
+        var isCiv = Type == "civ";
+        CivParticles.SetActive(isCiv);
+        NatParticles.SetActive(isCiv);
         WhiteParticles.SetActive(false);
     }
 
     public void TurnOff()
     {
-        Particles.SetActive(false);
+        CivParticles.SetActive(false);
+        NatParticles.SetActive(false);
         WhiteParticles.SetActive(true);
+    }
+
+    public void ShuffleType()
+    {
+        Type = Random.Range(0, 100) < 50 ? "civ" : "nat";
     }
 }

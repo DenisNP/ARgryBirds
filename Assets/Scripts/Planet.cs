@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Assets.Scripts;
 using UnityEngine;
+using UnityEngine.Networking;
 using Random = UnityEngine.Random;
 
 public class Planet : MonoBehaviour
@@ -9,17 +13,17 @@ public class Planet : MonoBehaviour
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
     private const int TotemsCount = 16;
-    private const int StartNaturePercent = 5;
+    private const int StartNaturePercent = 75;
     private const float BackwardsSpeedCoeff = 100f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
+    private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
     
     public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
     public GameObject[] seaObjects;
 
-    public Totem civilizationTotem;
-    public Totem natureTotem;
+    public Totem totem;
     public Transform Clouds;
     
     public Material m_GroundMaterial;
@@ -44,10 +48,14 @@ public class Planet : MonoBehaviour
 
     private int _generateNumber = 3;
     private DateTime _lastGenerated = DateTime.MinValue;
+    private DateTime _lastRequest = DateTime.MinValue;
+    private bool _requestingNow = false;
     private bool _backwards = false;
     private readonly Dictionary<Polygon, (GameObject, bool)> _planted = new Dictionary<Polygon, (GameObject, bool)>();
     private float civRatio = 0f;
     private float totalRotation = 0f;
+    private State _lastState = new State();
+    private bool _totemsOn = true;
     
     private readonly List<(Totem, Vector3)> _totems = new List<(Totem, Vector3)>();
 
@@ -136,6 +144,53 @@ public class Planet : MonoBehaviour
                 civRatio = _planted.Count(x => x.Value.Item2) * 1f / _planted.Count;
                 healthBar.UpdateBar(civRatio, 1f);
                 _lastGenerated = DateTime.Now;
+            }
+        }
+
+        if (!_requestingNow && DateTime.Now - _lastRequest > requestsPeriod)
+        {
+            _requestingNow = true;
+            _lastRequest = DateTime.Now;
+            StartCoroutine(GetRequest("https://arngry.herokuapp.com/"));
+        }
+
+        if (_lastState.HasPose(1))
+        {
+            _totemsOn = true;
+            foreach (var (tt, _) in _totems)
+            {
+                if (tt.Type == "civ")
+                {
+                    tt.TurnOn();    
+                }
+                else
+                {
+                    tt.TurnOff();
+                }
+            }
+        }
+        else if (_lastState.HasPose(2))
+        {
+            _totemsOn = true;
+            foreach (var (tt, _) in _totems)
+            {
+                if (tt.Type == "nat")
+                {
+                    tt.TurnOn();
+                }
+                else
+                {
+                    tt.TurnOff();
+                }
+            }
+        }
+        else if (_totemsOn)
+        {
+            _totemsOn = false;
+            foreach (var (tt, _) in _totems)
+            {
+                tt.TurnOff();
+                tt.ShuffleType();
             }
         }
     }
@@ -237,8 +292,6 @@ public class Planet : MonoBehaviour
     private void AddTotems(List<Polygon> mPolygons)
     {
         var points = PointsOnSphere(TotemsCount).ToList();
-        var lastCiv = false;
-        
         while (_totems.Count < TotemsCount)
         {
             var index = Random.Range(0, points.Count);
@@ -246,10 +299,10 @@ public class Planet : MonoBehaviour
             points.RemoveAt(index);
             
             var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * _point;
-            var t = Instantiate(lastCiv ? natureTotem : civilizationTotem, point, Quaternion.identity, transform); 
+            var t = Instantiate(totem, point, Quaternion.identity, transform); 
             t.transform.rotation = Quaternion.LookRotation(t.transform.position);
-            lastCiv = !lastCiv;
-            
+            t.ShuffleType();
+
             _totems.Add((t, _point));
         }
     }
@@ -650,5 +703,26 @@ public class Planet : MonoBehaviour
         }
         Vector3[] pts = upts.ToArray();
         return pts;
+    }
+    
+    IEnumerator GetRequest(string uri)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+        {
+            // Request and wait for the desired page.
+            yield return webRequest.SendWebRequest();
+            
+            if (webRequest.isNetworkError)
+            {
+                _requestingNow = false;
+                _lastRequest = DateTime.Now + new TimeSpan(0, 0, 1);
+            }
+            else
+            {
+                var state = JsonUtility.FromJson<State>(webRequest.downloadHandler.text);
+                _lastState = state;
+                _requestingNow = false;
+            }
+        }
     }
 }
