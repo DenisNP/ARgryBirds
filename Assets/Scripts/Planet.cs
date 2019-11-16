@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -19,9 +18,16 @@ public class Planet : MonoBehaviour
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
     
+    private const float topCam = 0.33f;
+    private const float bottomCam = -0.46f;
+    private const float leftCam = -0.53f;
+    private const float rightCam = 0.53f;
+    private const float zCam = -2f;
+    
     public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
     public GameObject[] seaObjects;
+    public Bird bird;
 
     public Totem totem;
     public Transform Clouds;
@@ -56,6 +62,8 @@ public class Planet : MonoBehaviour
     private float totalRotation = 0f;
     private State _lastState = new State();
     private bool _totemsOn = true;
+    private long _lastHitTime = 0;
+    private string _lastHitType = "";
     
     private readonly List<(Totem, Vector3)> _totems = new List<(Totem, Vector3)>();
 
@@ -98,9 +106,19 @@ public class Planet : MonoBehaviour
                 healthBar.UpdateBar(civRatio, 1f);
                 _lastGenerated = DateTime.Now;
 
-                if (civRatio >= 1f)
+                if (civRatio > 1f)
                 {
+                    // TODO game over
                     TurnBackwards(true);
+                }
+                else if (civRatio >= 0.95f)
+                {
+                    // TODO warning
+                    if (_lastState.HasPose(3))
+                    {
+                        // TODO remove warning
+                        TurnBackwards(true);
+                    }
                 }
             }
         }
@@ -192,6 +210,12 @@ public class Planet : MonoBehaviour
                 tt.TurnOff();
                 tt.ShuffleType();
             }
+        }
+
+        if (_lastState.Hit(_lastHitTime))
+        {
+            _lastHitTime = _lastState.last_hit.time;
+            CreateBird();
         }
     }
 
@@ -724,5 +748,13 @@ public class Planet : MonoBehaviour
                 _requestingNow = false;
             }
         }
+    }
+    
+    private void CreateBird()
+    {
+        var startX = leftCam + (rightCam - leftCam) * _lastState.last_hit.x / 800f;
+        var startY = topCam - (topCam - bottomCam) * _lastState.last_hit.y / 600f;
+        var startPoint = new Vector3(startX, startY, zCam);
+        bird.Fire(startPoint);
     }
 }

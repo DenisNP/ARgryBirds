@@ -15,6 +15,11 @@ namespace Assets.Scripts
             var ct = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             return ct - last_pose.time_end < 1000 && last_pose.pose_id == i;
         }
+
+        public bool Hit(long lastHit)
+        {
+            return last_hit != null && last_hit.time != lastHit;
+        }
     }
 
     [Serializable]

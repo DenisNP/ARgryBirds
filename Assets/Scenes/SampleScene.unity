@@ -335,10 +335,8 @@ MonoBehaviour:
   - {fileID: 4310341193629934990, guid: 1c5b430c888ab7040988d3fcb1e2accd, type: 3}
   - {fileID: 1470581827709603966, guid: 9bf1d7c0ad36ca64e8c8d29697fdc184, type: 3}
   - {fileID: 1508456935894842922, guid: c3e4918b0c6794044b72574c8ec58af4, type: 3}
-  civilizationTotem: {fileID: 833916158168270266, guid: 4edfc1aa714c570428838219c61af436,
-    type: 3}
-  natureTotem: {fileID: 5258782975294619202, guid: 99ecf4847114d5945bde231bc1d7975d,
-    type: 3}
+  bird: {fileID: 8607983740595203012, guid: fbbff0341231b5a4c982314df7e71f81, type: 3}
+  totem: {fileID: 833916158168270266, guid: 4edfc1aa714c570428838219c61af436, type: 3}
   Clouds: {fileID: 1123766215}
   m_GroundMaterial: {fileID: 2100000, guid: 4df8d1aaee8737d46b73a23f8db8f656, type: 2}
   m_OceanMaterial: {fileID: 2100000, guid: 297c693a57253724c881afe6c7ac126c, type: 2}
