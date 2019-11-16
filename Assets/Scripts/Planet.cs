@@ -17,6 +17,10 @@ public class Planet : MonoBehaviour
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
     private const float BackwardsSpeedCoeff = 100f;
+    private const float LowerSpeed = 0.01f;
+    private const float HigherSpeed = 0.05f;
+    private const float LowerAngularSpeed = 0.2f;
+    private const float HigherAngularSpeed = 1.5f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
@@ -783,6 +787,12 @@ public class Planet : MonoBehaviour
         var startX = leftCam + (rightCam - leftCam) * _lastState.last_hit.x / 800f;
         var startY = topCam - (topCam - bottomCam) * _lastState.last_hit.y / 600f;
         var startPoint = new Vector3(startX, startY, zCam);
-        bird.Fire(startPoint, this);
+        var brd = Instantiate(bird, startPoint, Quaternion.identity);
+        brd.Fire(
+            startPoint,
+            LowerSpeed + (HigherSpeed - LowerSpeed) * _lastState.last_hit.strength,
+            HigherAngularSpeed - (HigherAngularSpeed - LowerAngularSpeed) * _lastState.last_hit.strength,
+            this
+        );
     }
 }
