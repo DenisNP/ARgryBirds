@@ -39,6 +39,7 @@ public class Planet : MonoBehaviour
     public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
     public GameObject[] seaObjects;
+    public GameObject hitNone;
     public Bird bird;
 
     public Text winText;
@@ -84,7 +85,7 @@ public class Planet : MonoBehaviour
     private bool _totemsOn = true;
     private long _lastHitTime = 0;
     private string _lastHitType = "";
-    private DateTime _lastMutation = DateTime.MinValue;
+    private DateTime _lastMutation = DateTime.Now;
     
     private readonly List<(Totem, Vector3)> _totems = new List<(Totem, Vector3)>();
 
@@ -271,8 +272,8 @@ public class Planet : MonoBehaviour
 
     private void SetGenNumberText()
     {
-        var symbol = _generateNumber > 0 ? ">" : "<";
-        var text = ">";
+        var symbol = _generateNumber >= 0 ? ">" : "<";
+        var text = symbol + symbol + symbol;
         switch (_generateNumber)
         {
             case 1:
@@ -281,9 +282,6 @@ public class Planet : MonoBehaviour
             case 2:
             case 3:
                 text = symbol + symbol;
-                break;
-            default:
-                text = symbol + symbol + symbol;
                 break;
         }
 
@@ -914,6 +912,10 @@ public class Planet : MonoBehaviour
 
             SetGenNumberText();
         }
+        else
+        {
+            HitNone(point, id);
+        }
     }
 
     private void ShuffleTotems()
@@ -929,5 +931,11 @@ public class Planet : MonoBehaviour
             var tt = _totems[Random.Range(0, _totems.Count)].Item1;
             tt.DisableType();
         }
+    }
+
+    public void HitNone(Vector3 transformPosition, string id)
+    {
+        var h = Instantiate(hitNone, transformPosition, Quaternion.identity);
+        h.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
     }
 }

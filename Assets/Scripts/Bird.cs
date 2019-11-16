@@ -30,6 +30,7 @@ namespace Assets.Scripts
             if (transform.position.z > 0.5f)
             {
                 Destroy(gameObject);
+                _planet.HitNone(transform.position, _id);
             }
         }
         
