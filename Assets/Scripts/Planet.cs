@@ -1,13 +1,23 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
+    private const int TotemsCount = 16;
+    private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
+    
+    public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
     public GameObject[] seaObjects;
+
+    public Totem civilizationTotem;
+    public Totem natureTotem;
+    public Transform Clouds;
     
     public Material m_GroundMaterial;
     public Material m_OceanMaterial;
@@ -29,9 +39,51 @@ public class Planet : MonoBehaviour
     List<Polygon> m_Polygons;
     List<Vector3> m_Vertices;
 
+    private int _generateNumber = 3;
+    private DateTime _lastGenerated = DateTime.MinValue;
+    private bool _backwards = false;
+    private readonly Dictionary<Polygon, (GameObject, bool)> _planted = new Dictionary<Polygon, (GameObject, bool)>();
+    private float civRatio = 0f;
+    private float totalRotation = 0f;
+    
+    private readonly List<(Totem, Vector3)> _totems = new List<(Totem, Vector3)>();
+
     void Update()
     {
         transform.Rotate(new Vector3(0, 1, 1), RotationSpeed);
+        Clouds.Rotate(new Vector3(0, 1, 0), RotationSpeed * 0.8f);
+        totalRotation += RotationSpeed;
+
+        var diff = DateTime.Now - _lastGenerated;
+        if (diff > generationPeriod)
+        {
+            var repeat = Math.Abs(_generateNumber);
+            var genCiv = repeat > 0;
+            if (genCiv)
+            {
+                var nature = _planted.Where(x => !x.Value.Item2).ToList();
+                var natureCount = nature.Count;
+                while (natureCount-- > 0 && repeat-- > 0)
+                {
+                    var randomPoly = nature[Random.Range(0, natureCount)];
+                    AddCiv(randomPoly.Key);
+                }
+            }
+            else
+            {
+                var civ = _planted.Where(x => x.Value.Item2).ToList();
+                var civCount = civ.Count;
+                while (civCount-- > 0 && repeat-- > 0)
+                {
+                    var randomPoly = civ[Random.Range(0, civ.Count)];
+                    AddNature(randomPoly.Key);
+                }
+            }
+
+            civRatio = _planted.Count(x => x.Value.Item2) * 1f / _planted.Count;
+            healthBar.UpdateBar(civRatio, 1f);
+            _lastGenerated = DateTime.Now;
+        }
     }
 
     public void Start()
@@ -40,10 +92,10 @@ public class Planet : MonoBehaviour
         Subdivide(3);
         CalculateNeighbors();
 
-        Color32 colorOcean     = new Color32(  0,  80, 220,   0);
-        Color32 colorGrass     = new Color32(  0, 220,   0,   0);
-        Color32 colorDirt      = new Color32(180, 140,  20,   0);
-        Color32 colorDeepOcean = new Color32(  0,  40, 110,   0);
+        Color32 colorOcean     = new Color32(  178,  0, 183,   0);
+        Color32 colorGrass     = new Color32(  249, 129,   0,   0);
+        Color32 colorDirt      = new Color32(219, 104,  76,   0);
+        Color32 colorDeepOcean = new Color32(  119,  5, 120,   0);
 
         foreach (Polygon p in m_Polygons)
             p.m_Color = colorOcean;
@@ -119,38 +171,78 @@ public class Planet : MonoBehaviour
         m_GroundMesh = GenerateMesh("Ground Mesh", m_GroundMaterial);
 
         AddLand(landPolys);
-        AddSea(oceanPolys);
+        AddClouds(oceanPolys);
+        AddTotems(m_Polygons);
     }
 
-    private void AddSea(PolySet oceanPolys)
+    private void AddTotems(List<Polygon> mPolygons)
     {
-        var i = 0;
-        foreach (var poly in oceanPolys)
+        var points = PointsOnSphere(TotemsCount).ToList();
+        var lastCiv = false;
+        
+        while (_totems.Count < TotemsCount)
         {
-            if (i++ % 4 == 0)
-            {
-                var obj = seaObjects[Random.Range(0, seaObjects.Length)];
-                var t = Instantiate(obj, poly.Center(m_Vertices) * 1.2f, Quaternion.identity, transform);
-                t.transform.rotation = Quaternion.LookRotation(t.transform.position);
-                // t.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                t.transform.RotateAround(t.transform.position, t.transform.position, Random.Range(0, 100f));
-            }
+            var index = Random.Range(0, points.Count);
+            var _point = points[index];
+            points.RemoveAt(index);
+            
+            var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * _point;
+            var t = Instantiate(lastCiv ? natureTotem : civilizationTotem, point, Quaternion.identity, transform); 
+            t.transform.rotation = Quaternion.LookRotation(t.transform.position);
+            lastCiv = !lastCiv;
+            
+            _totems.Add((t, _point));
         }
     }
 
     private void AddLand(PolySet landPolys)
     {
-        var i = 0;
         foreach (var poly in landPolys)
         {
-            if (i++ % 3 == 0)
+            if (Random.Range(0, 100) < 75)
             {
-                var obj = landObjects[Random.Range(0, landObjects.Length)];
-                var t = Instantiate(obj, poly.Center(m_Vertices), Quaternion.identity, transform);
-                t.transform.rotation = Quaternion.LookRotation(t.transform.position);
-                t.transform.RotateAround(t.transform.position, t.transform.position, Random.Range(0, 100f));
+                AddNature(poly);
+            }
+            else
+            {
+                AddCiv(poly);
             }
         }
+    }
+
+    private void AddNature(Polygon poly)
+    {
+        var obj = landObjects[Random.Range(0, 3)];
+        var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * poly.Center(m_Vertices);
+        
+        var t = Instantiate(obj, point, Quaternion.identity, transform);
+        t.transform.rotation = Quaternion.LookRotation(t.transform.position);
+        t.transform.RotateAround(t.transform.position, t.transform.position, Random.Range(0, 100f));
+        UpdatePlanted(poly, t, false);
+    }
+
+    private void UpdatePlanted(Polygon poly, GameObject o, bool b)
+    {
+        if (!_planted.ContainsKey(poly))
+        {
+            _planted.Add(poly, (o, b));
+        }
+        else
+        {
+            Destroy(_planted[poly].Item1);
+            _planted[poly] = (o, b);
+        }
+    }
+
+    private void AddCiv(Polygon poly)
+    {
+        var obj = landObjects[Random.Range(3, 6)];
+        var point = Quaternion.AngleAxis(totalRotation, new Vector3(0, 1, 1)) * poly.Center(m_Vertices);
+        
+        var t = Instantiate(obj, point, Quaternion.identity, transform);
+        t.transform.rotation = Quaternion.LookRotation(t.transform.position);
+        t.transform.RotateAround(t.transform.position, t.transform.position, Random.Range(0, 100f));
+        UpdatePlanted(poly, t, true);
     }
 
     public void InitAsIcosohedron()
@@ -460,5 +552,44 @@ public class Planet : MonoBehaviour
         terrainFilter.mesh = terrainMesh;
 
         return meshObject;
+    }
+    
+    private void AddClouds(PolySet oceanPolys)
+    {
+        var i = 0;
+        foreach (var poly in oceanPolys)
+        {
+            if (i++ % 6 == 0)
+            {
+                var obj = seaObjects[Random.Range(0, seaObjects.Length)];
+                var t = Instantiate(obj, poly.Center(m_Vertices) * 1.2f, Quaternion.identity, Clouds);
+                t.transform.rotation = Quaternion.LookRotation(t.transform.position);
+                t.transform.RotateAround(t.transform.position, t.transform.position, Random.Range(0, 100f));
+            }
+        }
+    }
+    
+    private Vector3[] PointsOnSphere(int n)
+    {
+        List<Vector3> upts = new List<Vector3>();
+        float inc = Mathf.PI * (3 - Mathf.Sqrt(5));
+        float off = 2.0f / n;
+        float x = 0;
+        float y = 0;
+        float z = 0;
+        float r = 0;
+        float phi = 0;
+       
+        for (var k = 0; k < n; k++){
+            y = k * off - 1 + (off /2);
+            r = Mathf.Sqrt(1 - y * y);
+            phi = k * inc;
+            x = Mathf.Cos(phi) * r;
+            z = Mathf.Sin(phi) * r;
+           
+            upts.Add(new Vector3(x, y, z));
+        }
+        Vector3[] pts = upts.ToArray();
+        return pts;
     }
 }
