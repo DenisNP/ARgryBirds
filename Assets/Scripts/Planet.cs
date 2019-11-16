@@ -9,7 +9,10 @@ public class Planet : MonoBehaviour
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
     private const int TotemsCount = 16;
+    private const int StartNaturePercent = 5;
+    private const float BackwardsSpeedCoeff = 100f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
+    private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     
     public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
@@ -50,40 +53,96 @@ public class Planet : MonoBehaviour
 
     void Update()
     {
-        transform.Rotate(new Vector3(0, 1, 1), RotationSpeed);
-        Clouds.Rotate(new Vector3(0, 1, 0), RotationSpeed * 0.8f);
-        totalRotation += RotationSpeed;
-
         var diff = DateTime.Now - _lastGenerated;
-        if (diff > generationPeriod)
+        
+        if (!_backwards)
         {
-            var repeat = Math.Abs(_generateNumber);
-            var genCiv = repeat > 0;
-            if (genCiv)
+            transform.Rotate(new Vector3(0, 1, 1), RotationSpeed);
+            Clouds.Rotate(new Vector3(0, 1, 0), RotationSpeed * 0.8f);
+            totalRotation += RotationSpeed;
+            
+            if (diff > generationPeriod)
             {
-                var nature = _planted.Where(x => !x.Value.Item2).ToList();
-                var natureCount = nature.Count;
-                while (natureCount-- > 0 && repeat-- > 0)
+                var repeat = Math.Abs(_generateNumber);
+                var genCiv = repeat > 0;
+                if (genCiv)
                 {
-                    var randomPoly = nature[Random.Range(0, natureCount)];
-                    AddCiv(randomPoly.Key);
+                    var nature = _planted.Where(x => !x.Value.Item2).ToList();
+                    var natureCount = nature.Count;
+                    while (natureCount-- > 0 && repeat-- > 0)
+                    {
+                        var randomPoly = nature[Random.Range(0, natureCount)];
+                        AddCiv(randomPoly.Key);
+                    }
                 }
-            }
-            else
-            {
-                var civ = _planted.Where(x => x.Value.Item2).ToList();
-                var civCount = civ.Count;
-                while (civCount-- > 0 && repeat-- > 0)
+                else
                 {
-                    var randomPoly = civ[Random.Range(0, civ.Count)];
-                    AddNature(randomPoly.Key);
+                    var civ = _planted.Where(x => x.Value.Item2).ToList();
+                    var civCount = civ.Count;
+                    while (civCount-- > 0 && repeat-- > 0)
+                    {
+                        var randomPoly = civ[Random.Range(0, civCount)];
+                        AddNature(randomPoly.Key);
+                    }
                 }
-            }
 
-            civRatio = _planted.Count(x => x.Value.Item2) * 1f / _planted.Count;
-            healthBar.UpdateBar(civRatio, 1f);
-            _lastGenerated = DateTime.Now;
+                civRatio = _planted.Count(x => x.Value.Item2) * 1f / _planted.Count;
+                healthBar.UpdateBar(civRatio, 1f);
+                _lastGenerated = DateTime.Now;
+
+                if (civRatio >= 1f)
+                {
+                    TurnBackwards(true);
+                }
+            }
         }
+        else
+        {
+            transform.Rotate(new Vector3(0, 1, 1), -RotationSpeed * BackwardsSpeedCoeff);
+            Clouds.Rotate(new Vector3(0, 1, 0), -RotationSpeed * 0.8f * BackwardsSpeedCoeff);
+            totalRotation -= RotationSpeed * BackwardsSpeedCoeff;
+
+            if (diff > backwardsGenerationPeriod)
+            {
+                var repeat = 2;
+                if (Math.Abs(civRatio - 0.5f) <= 0.05f)
+                {
+                    TurnBackwards(false);
+                }
+                else
+                {
+                    if (civRatio < 0.5f)
+                    {
+                        var nature = _planted.Where(x => !x.Value.Item2).ToList();
+                        var natureCount = nature.Count;
+                        while (natureCount-- > 0 && repeat-- > 0)
+                        {
+                            var randomPoly = nature[Random.Range(0, natureCount)].Key;
+                            AddCiv(randomPoly);
+                        }
+                    }
+                    else
+                    {
+                        var civ = _planted.Where(x => x.Value.Item2).ToList();
+                        var civCount = civ.Count;
+                        while(civCount-- > 0 && repeat-- > 0)
+                        {
+                            var randomPoly = civ[Random.Range(0, civCount)].Key;
+                            AddNature(randomPoly);
+                        }
+                    }
+                }
+                
+                civRatio = _planted.Count(x => x.Value.Item2) * 1f / _planted.Count;
+                healthBar.UpdateBar(civRatio, 1f);
+                _lastGenerated = DateTime.Now;
+            }
+        }
+    }
+
+    private void TurnBackwards(bool b)
+    {
+        _backwards = b;
     }
 
     public void Start()
@@ -199,7 +258,7 @@ public class Planet : MonoBehaviour
     {
         foreach (var poly in landPolys)
         {
-            if (Random.Range(0, 100) < 75)
+            if (Random.Range(0, 100) < StartNaturePercent)
             {
                 AddNature(poly);
             }
