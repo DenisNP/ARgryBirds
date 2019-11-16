@@ -12,8 +12,8 @@ public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
-    private const int TotemsCount = 16;
-    private const int DisabledTotemsCount = 6;
+    private const int TotemsCount = 8;
+    private const int DisabledTotemsCount = 2;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
     private const float BackwardsSpeedCoeff = 100f;
@@ -24,6 +24,8 @@ public class Planet : MonoBehaviour
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
+    private readonly TimeSpan mutationPeriod = new TimeSpan(0, 0, 0, 15);
+    private const int MutationValue = 3;
     private const string StateUri = "https://arngry.herokuapp.com";
     private const string ModeUri = "https://arngry.herokuapp.com";
 
@@ -42,6 +44,7 @@ public class Planet : MonoBehaviour
     public Text winText;
     public Text looseText;
     public Text dangerText;
+    public Text genNumberText;
 
     public Totem totem;
     public Transform Clouds;
@@ -81,6 +84,7 @@ public class Planet : MonoBehaviour
     private bool _totemsOn = true;
     private long _lastHitTime = 0;
     private string _lastHitType = "";
+    private DateTime _lastMutation = DateTime.MinValue;
     
     private readonly List<(Totem, Vector3)> _totems = new List<(Totem, Vector3)>();
 
@@ -139,6 +143,13 @@ public class Planet : MonoBehaviour
                         TurnBackwards(true);
                     }
                 }
+            }
+
+            if (DateTime.Now - _lastMutation > mutationPeriod)
+            {
+                _lastMutation = DateTime.Now;
+                _generateNumber += Math.Sign(_generateNumber) * Random.Range(0, MutationValue + 1);
+                SetGenNumberText();
             }
         }
         else
@@ -256,6 +267,27 @@ public class Planet : MonoBehaviour
     {
         _backwards = b;
         _generateNumber = 3;
+    }
+
+    private void SetGenNumberText()
+    {
+        var symbol = _generateNumber > 0 ? ">" : "<";
+        var text = ">";
+        switch (_generateNumber)
+        {
+            case 1:
+                text = symbol;
+                break;
+            case 2:
+            case 3:
+                text = symbol + symbol;
+                break;
+            default:
+                text = symbol + symbol + symbol;
+                break;
+        }
+
+        genNumberText.text = text;
     }
 
     private void HideWindows()
@@ -857,12 +889,21 @@ public class Planet : MonoBehaviour
                 bestTotem.FullHitAnim();
                 _score += 100;
                 _generateNumber += (bestTotem.Type == "civ" ? -2 : 2);
+                if (_generateNumber == 0)
+                {
+                    _generateNumber = 1;
+                }
+                _lastMutation = DateTime.Now + mutationPeriod;
                 ShuffleTotems();
             } 
             else if (_lastHitType != "")
             {
                 // second hit wrong
                 _generateNumber += Math.Sign(_generateNumber);
+                if (_generateNumber == 0)
+                {
+                    _lastMutation = DateTime.MinValue;
+                }
                 bestTotem.DisableType();
             }
             else
@@ -870,6 +911,8 @@ public class Planet : MonoBehaviour
                 // first hit neutral
                 bestTotem.HitAnim();
             }
+
+            SetGenNumberText();
         }
     }
 
