@@ -5,6 +5,7 @@ using System.Linq;
 using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class Planet : MonoBehaviour
@@ -14,6 +15,7 @@ public class Planet : MonoBehaviour
     private const int TotemsCount = 16;
     private const int DisabledTotemsCount = 6;
     private const int StartNaturePercent = 75;
+    private const int MaxScore = 1000;
     private const float BackwardsSpeedCoeff = 100f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
@@ -24,7 +26,8 @@ public class Planet : MonoBehaviour
     private const float leftCam = -0.53f;
     private const float rightCam = 0.53f;
     private const float zCam = -2f;
-    
+
+    public Text scoreText;
     public SimpleHealthBar healthBar;
     public GameObject[] landObjects;
     public GameObject[] seaObjects;
@@ -43,6 +46,9 @@ public class Planet : MonoBehaviour
     public int   m_NumberOfHills = 5;
     public float m_HillSizeMax   = 1.0f;
     public float m_HillSizeMin   = 0.1f;
+
+    private int _score = 0;
+    private int _visibleScore = 0;
     
     // Internally, the Planet object stores its meshes as a child GameObjects:
     GameObject m_GroundMesh;
@@ -111,6 +117,7 @@ public class Planet : MonoBehaviour
                 {
                     // TODO game over
                     TurnBackwards(true);
+                    _score = 0;
                 }
                 else if (civRatio >= 0.9f)
                 {
@@ -134,6 +141,7 @@ public class Planet : MonoBehaviour
                 var repeat = 2;
                 if (Math.Abs(civRatio - 0.5f) <= 0.05f)
                 {
+                    // TODO close all warnings
                     TurnBackwards(false);
                 }
                 else
@@ -217,6 +225,19 @@ public class Planet : MonoBehaviour
         {
             _lastHitTime = _lastState.last_hit.time;
             CreateBird();
+        }
+
+        if (_visibleScore != _score)
+        {
+            _visibleScore += Math.Sign(_score - _visibleScore);
+            scoreText.text = _visibleScore.ToString().PadLeft(3, '0');
+        }
+
+        if (_visibleScore >= MaxScore && _score == _visibleScore && !_backwards)
+        {
+            // TODO win
+            TurnBackwards(true);
+            _score = 0;
         }
     }
 
@@ -762,6 +783,6 @@ public class Planet : MonoBehaviour
         var startX = leftCam + (rightCam - leftCam) * _lastState.last_hit.x / 800f;
         var startY = topCam - (topCam - bottomCam) * _lastState.last_hit.y / 600f;
         var startPoint = new Vector3(startX, startY, zCam);
-        bird.Fire(startPoint);
+        bird.Fire(startPoint, this);
     }
 }
