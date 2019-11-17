@@ -12,8 +12,8 @@ public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
-    private const int TotemsCount = 10;
-    private const int DisabledTotemsCount = 2;
+    private const int TotemsCount = 12;
+    private const int DisabledTotemsCount = 0;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
     private const float BackwardsSpeedCoeff = 100f;
@@ -139,7 +139,7 @@ public class Planet : MonoBehaviour
                 else if (civRatio >= 0.9f || civRatio <= 0.1f)
                 {
                     dangerText.gameObject.SetActive(true);
-                    if (_lastState.HasPose(3, 2000))
+                    if (_lastState.HasPose(2))
                     {
                         HideWindows();
                         _score /= 2;
@@ -211,7 +211,7 @@ public class Planet : MonoBehaviour
             _totemsOn = true;
             foreach (var (tt, _) in _totems)
             {
-                if (tt.Type == "civ")
+                if (!tt.IsDisabled())
                 {
                     tt.TurnOn();    
                 }
@@ -221,7 +221,7 @@ public class Planet : MonoBehaviour
                 }
             }
         }
-        else if (_lastState.HasPose(2))
+        /* else if (_lastState.HasPose(2))
         {
             _totemsOn = true;
             foreach (var (tt, _) in _totems)
@@ -235,7 +235,7 @@ public class Planet : MonoBehaviour
                     tt.TurnOff();
                 }
             }
-        }
+        } */
         else if (_totemsOn)
         {
             _totemsOn = false;
