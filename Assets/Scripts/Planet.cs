@@ -139,7 +139,7 @@ public class Planet : MonoBehaviour
                 else if (civRatio >= 0.9f || civRatio <= 0.1f)
                 {
                     dangerText.gameObject.SetActive(true);
-                    if (_lastState.HasPose(2))
+                    if (_lastState.HasPose(999))
                     {
                         HideWindows();
                         _score /= 2;
@@ -206,7 +206,7 @@ public class Planet : MonoBehaviour
             StartCoroutine(GetState());
         }
 
-        if (_lastState.HasPose(1))
+        if (_lastState.HasPose(99))
         {
             _totemsOn = true;
             foreach (var (tt, _) in _totems)
