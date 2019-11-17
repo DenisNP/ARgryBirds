@@ -8,12 +8,12 @@ namespace Assets.Scripts
         public Hit last_hit;
         public Pose last_pose;
 
-        public bool HasPose(int i)
+        public bool HasPose(int i, long millis = 0)
         {
             if (last_pose == null) return false;
             
             var ct = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            return ct - last_pose.time_end < 1000 && last_pose.pose_id == i;
+            return ct - last_pose.time_end < 1000 && last_pose.pose_id == i && ct - last_pose.time_start > millis;
         }
 
         public bool Hit(long lastHit)

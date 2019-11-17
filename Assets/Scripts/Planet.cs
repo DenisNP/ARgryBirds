@@ -138,7 +138,7 @@ public class Planet : MonoBehaviour
                 else if (civRatio >= 0.9f || civRatio <= 0.1f)
                 {
                     dangerText.gameObject.SetActive(true);
-                    if (_lastState.HasPose(3))
+                    if (_lastState.HasPose(3, 3000))
                     {
                         HideWindows();
                         _score = _score / 2;
