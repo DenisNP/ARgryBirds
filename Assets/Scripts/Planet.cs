@@ -12,7 +12,7 @@ public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
-    private const int TotemsCount = 12;
+    private const int TotemsCount = 16;
     private const int DisabledTotemsCount = 0;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
@@ -862,15 +862,15 @@ public class Planet : MonoBehaviour
         Totem bestTotem = null;
         foreach (var (tt, _) in _totems)
         {
-            var dist = (point - totem.transform.position).magnitude;
-            if (minDist < dist)
+            var dist = (point - tt.transform.position).magnitude;
+            if (dist < minDist)
             {
                 minDist = dist;
                 bestTotem = tt;
             }
         }
-
-        if (bestTotem != null && minDist < 0.1f)
+        Debug.Log(minDist);
+        if (bestTotem != null && minDist <= 0.3f)
         {
             if (_lastHitType == "" && !bestTotem.IsDisabled())
             {

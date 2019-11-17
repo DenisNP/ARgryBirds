@@ -40,8 +40,22 @@ public class Totem : MonoBehaviour
 
     public void TurnOn()
     {
-        CivParticles.SetActive(Type == "civ");
-        NatParticles.SetActive(Type == "nat");
+        if (Type == "civ")
+        {
+            if (!CivParticles.activeSelf)
+            {
+                CivParticles.SetActive(true);
+            }
+            NatParticles.SetActive(false);
+        }
+        if (Type == "nat")
+        {
+            if (!NatParticles.activeSelf)
+            {
+                NatParticles.SetActive(true);
+            }
+            CivParticles.SetActive(false);
+        }
         WhiteParticles.SetActive(false);
     }
 
@@ -59,8 +73,8 @@ public class Totem : MonoBehaviour
 
     public void DisableType()
     {
-        Type = "none";
-        TurnOff();
+        /*Type = "none";
+        TurnOff();*/
     }
 
     public bool IsDisabled()
@@ -70,12 +84,14 @@ public class Totem : MonoBehaviour
 
     public void HitAnim()
     {
-        animFrame = 1f;
+        // animFrame = 1f;
+        // FullHitAnim();
+        TurnOn();
     }
 
     public void FullHitAnim()
     {
         var anim = Instantiate(Type == "civ" ? HitCiv : HitNat, transform.position, Quaternion.identity);
-        anim.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        anim.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
     }
 }
