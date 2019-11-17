@@ -130,6 +130,7 @@ public class Planet : MonoBehaviour
 
                 if (civRatio > 0.99f || civRatio < 0.01f)
                 {
+                    HideWindows();
                     looseText.gameObject.SetActive(true);
                     looseText.text = $"GAME OVER\nyour score: {_score}";
                     TurnBackwards(true);
