@@ -163,7 +163,7 @@ public class Planet : MonoBehaviour
 
             if (diff > backwardsGenerationPeriod)
             {
-                var repeat = 2;
+                var repeat = Random.Range(2,4);
                 if (Math.Abs(civRatio - 0.5f) <= 0.05f)
                 {
                     HideWindows();
@@ -242,7 +242,7 @@ public class Planet : MonoBehaviour
             foreach (var (tt, _) in _totems)
             {
                 tt.TurnOff();
-                tt.ShuffleType();
+                // tt.ShuffleType();
             }
         }
 
@@ -869,7 +869,6 @@ public class Planet : MonoBehaviour
                 bestTotem = tt;
             }
         }
-        Debug.Log(minDist);
         if (bestTotem != null && minDist <= 0.3f)
         {
             if (_lastHitType == "" && !bestTotem.IsDisabled())

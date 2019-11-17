@@ -61,9 +61,20 @@ public class Totem : MonoBehaviour
 
     public void TurnOff()
     {
-        CivParticles.SetActive(false);
-        NatParticles.SetActive(false);
-        WhiteParticles.SetActive(true);
+        if (CivParticles.activeSelf)
+        {
+            CivParticles.SetActive(false);
+        }
+
+        if (NatParticles.activeSelf)
+        {
+            NatParticles.SetActive(false);
+        }
+
+        if (!WhiteParticles.activeSelf)
+        {
+            WhiteParticles.SetActive(true);
+        }
     }
 
     public void ShuffleType()
