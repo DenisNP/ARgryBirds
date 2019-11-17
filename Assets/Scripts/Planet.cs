@@ -128,19 +128,20 @@ public class Planet : MonoBehaviour
                 healthBar.UpdateBar(civRatio, 1f);
                 _lastGenerated = DateTime.Now;
 
-                if (civRatio > 0.99f)
+                if (civRatio > 0.99f || civRatio < 0.01f)
                 {
                     looseText.gameObject.SetActive(true);
                     looseText.text = $"GAME OVER\nyour score: {_score}";
                     TurnBackwards(true);
                     _score = 0;
                 }
-                else if (civRatio >= 0.9f)
+                else if (civRatio >= 0.9f || civRatio <= 0.1f)
                 {
                     dangerText.gameObject.SetActive(true);
                     if (_lastState.HasPose(3))
                     {
                         HideWindows();
+                        _score = _score / 2;
                         TurnBackwards(true);
                     }
                 }
