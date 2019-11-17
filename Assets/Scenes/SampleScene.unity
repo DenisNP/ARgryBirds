@@ -514,7 +514,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 22403254, guid: 60da1df1f7edb3747bea8f735b2768d1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 116
+      value: 136.7
       objectReference: {fileID: 0}
     - target: {fileID: 22403254, guid: 60da1df1f7edb3747bea8f735b2768d1, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1037,7 +1037,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: 'Danger!
 
-    Use special pose.'
+    Use special code.'
 --- !u!222 &1505974602
 CanvasRenderer:
   m_ObjectHideFlags: 0
