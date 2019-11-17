@@ -25,7 +25,7 @@ public class Planet : MonoBehaviour
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
     private readonly TimeSpan mutationPeriod = new TimeSpan(0, 0, 0, 15);
-    private const int MutationValue = 3;
+    private const int MutationValue = 1;
     private const string StateUri = "https://arngry.herokuapp.com";
     private const string ModeUri = "https://arngry.herokuapp.com";
 
@@ -73,7 +73,7 @@ public class Planet : MonoBehaviour
     List<Polygon> m_Polygons;
     List<Vector3> m_Vertices;
 
-    private int _generateNumber = 3;
+    private int _generateNumber = 2;
     private DateTime _lastGenerated = DateTime.MinValue;
     private DateTime _lastRequest = DateTime.MinValue;
     private bool _requestingNow = false;
@@ -142,7 +142,7 @@ public class Planet : MonoBehaviour
                     if (_lastState.HasPose(3, 3000))
                     {
                         HideWindows();
-                        _score = _score / 2;
+                        _score /= 2;
                         TurnBackwards(true);
                     }
                 }
