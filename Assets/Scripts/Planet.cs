@@ -26,8 +26,8 @@ public class Planet : MonoBehaviour
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
     private readonly TimeSpan mutationPeriod = new TimeSpan(0, 0, 0, 15);
     private const int MutationValue = 1;
-    private const string StateUri = "https://arngry.herokuapp.com";
-    private const string ModeUri = "https://arngry.herokuapp.com";
+    private const string StateUri = "http://localhost:3000";
+    private const string ModeUri = "http://localhost:3333/api/ble";
 
     private const float topCam = 0.33f;
     private const float bottomCam = -0.46f;
@@ -833,7 +833,7 @@ public class Planet : MonoBehaviour
 
     IEnumerator SendMode(int mode, string id)
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get($"{ModeUri}/{id}/{mode}"))
+        using (UnityWebRequest webRequest = UnityWebRequest.Get($"{ModeUri}/{mode}"))
         {
             // Request and wait for the desired page.
             yield return webRequest.SendWebRequest();
