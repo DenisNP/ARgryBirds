@@ -12,7 +12,7 @@ public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
-    private const int TotemsCount = 8;
+    private const int TotemsCount = 10;
     private const int DisabledTotemsCount = 2;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
@@ -936,6 +936,6 @@ public class Planet : MonoBehaviour
     public void HitNone(Vector3 transformPosition, string id)
     {
         var h = Instantiate(hitNone, transformPosition, Quaternion.identity);
-        h.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        h.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
     }
 }
