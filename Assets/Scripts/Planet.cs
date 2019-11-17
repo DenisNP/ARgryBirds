@@ -16,16 +16,16 @@ public class Planet : MonoBehaviour
     private const int DisabledTotemsCount = 0;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
-    private const float BackwardsSpeedCoeff = 100f;
+    private const float BackwardsSpeedCoeff = 150f;
     private const float LowerSpeed = 0.01f;
     private const float HigherSpeed = 0.05f;
-    private const float LowerAngularSpeed = 0.2f;
-    private const float HigherAngularSpeed = 1.5f;
+    private const float LowerAngularSpeed = 0.35f;
+    private const float HigherAngularSpeed = 0.35f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
     private readonly TimeSpan mutationPeriod = new TimeSpan(0, 0, 0, 15);
-    private const int MutationValue = 1;
+    private const int MutationValue = 0;
     private const string StateUri = "http://localhost:3000";
     private const string ModeUri = "http://localhost:3333/api/ble";
 
@@ -73,7 +73,7 @@ public class Planet : MonoBehaviour
     List<Polygon> m_Polygons;
     List<Vector3> m_Vertices;
 
-    private int _generateNumber = 2;
+    private int _generateNumber = 1;
     private DateTime _lastGenerated = DateTime.MinValue;
     private DateTime _lastRequest = DateTime.MinValue;
     private bool _requestingNow = false;
@@ -163,7 +163,7 @@ public class Planet : MonoBehaviour
 
             if (diff > backwardsGenerationPeriod)
             {
-                var repeat = Random.Range(2,4);
+                var repeat = 3;
                 if (Math.Abs(civRatio - 0.5f) <= 0.05f)
                 {
                     HideWindows();
@@ -869,7 +869,7 @@ public class Planet : MonoBehaviour
                 bestTotem = tt;
             }
         }
-        if (bestTotem != null && minDist <= 0.3f)
+        if (bestTotem != null && minDist <= 0.35f)
         {
             if (_lastHitType == "" && !bestTotem.IsDisabled())
             {
