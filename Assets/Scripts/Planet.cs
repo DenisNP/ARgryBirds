@@ -12,15 +12,15 @@ public class Planet : MonoBehaviour
 {
     private const float ExtrudeHeight = 0.015f;
     private const float RotationSpeed = 0.01f;
-    private const int TotemsCount = 16;
+    private const int TotemsCount = 24;
     private const int DisabledTotemsCount = 0;
     private const int StartNaturePercent = 75;
     private const int MaxScore = 1000;
     private const float BackwardsSpeedCoeff = 150f;
     private const float LowerSpeed = 0.01f;
     private const float HigherSpeed = 0.05f;
-    private const float LowerAngularSpeed = 0.35f;
-    private const float HigherAngularSpeed = 0.35f;
+    private const float LowerAngularSpeed = 0.25f;
+    private const float HigherAngularSpeed = 0.25f;
     private readonly TimeSpan generationPeriod = new TimeSpan(0, 0, 0, 0, 750);
     private readonly TimeSpan backwardsGenerationPeriod = new TimeSpan(0, 0, 0, 0, 50);
     private readonly TimeSpan requestsPeriod = new TimeSpan(0, 0, 0, 0, 500);
@@ -405,6 +405,8 @@ public class Planet : MonoBehaviour
 
             _totems.Add((t, p));
         }
+        
+        // Debug.Log((_totems[0].Item1.transform.position - _totems[1].Item1.transform.position).magnitude);
 
         while (_totems.Count(x => x.Item1.IsDisabled()) < DisabledTotemsCount)
         {
@@ -870,7 +872,7 @@ public class Planet : MonoBehaviour
                 bestTotem = tt;
             }
         }
-        if (bestTotem != null && minDist <= 0.35f)
+        if (bestTotem != null && minDist <= 0.5f)
         {
             if (_lastHitType == "" && !bestTotem.IsDisabled())
             {

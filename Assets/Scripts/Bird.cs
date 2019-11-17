@@ -21,17 +21,17 @@ namespace Assets.Scripts
                 _velocity = Quaternion.AngleAxis(-_angSpeed, _axis) * _velocity;
             }
 
-            if (transform.position.magnitude < 1.1f)
+            if (transform.position.magnitude < 1.1f || transform.position.z > 0.05f)
             {
                 _planet.HitSomething(transform.position, _id);
                 Destroy(gameObject);
             }
             
-            if (transform.position.z > 0.5f)
-            {
-                Destroy(gameObject);
-                _planet.HitNone(transform.position, _id);
-            }
+//            if (transform.position.z > 0.5f)
+//            {
+//                Destroy(gameObject);
+//                _planet.HitNone(transform.position, _id);
+//            }
         }
         
         public void Fire(Vector3 startPoint, float speed, float angSpeed, string id, Planet planet)
