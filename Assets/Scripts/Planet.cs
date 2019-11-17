@@ -269,7 +269,8 @@ public class Planet : MonoBehaviour
     private void TurnBackwards(bool b)
     {
         _backwards = b;
-        _generateNumber = 3;
+        _generateNumber = 1;
+        ShuffleTotems();
     }
 
     private void SetGenNumberText()
